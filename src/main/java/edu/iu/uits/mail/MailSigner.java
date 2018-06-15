@@ -68,6 +68,7 @@ public class MailSigner {
         }
         try {
             Address[] from = mimeMessage.getFrom();
+            final String localAddressRegex = "^(.*)@.*$";
 
             Optional<String> signingAddress = Arrays.stream(from).map(Address::toString).filter(address -> {
                 try {
@@ -78,12 +79,20 @@ public class MailSigner {
             }).findFirst();
 
             if(signingAddress.isPresent()) {
-                String emailKeyPassword = properties.getProperty(String.format("mail.keystore.%s.password", signingAddress.get()));
-                if(emailKeyPassword == null || emailKeyPassword.trim().isEmpty()) {
-                    log.debug(String.format("No key password found for %s.  Defaulting to using the keystore password.", signingAddress.get()));
-                    emailKeyPassword = properties.getProperty("mail.keystore.password");
+                String alias = signingAddress.get();
+                // check for full alias (signing address) in properties
+                String emailKeyPassword = properties.getProperty(String.format("mail.keystore.%s.password", alias));
+                if (emailKeyPassword == null || emailKeyPassword.trim().isEmpty()) {
+                    // try local part of address
+                    log.debug(String.format("No key password found for %s.  Trying local portion, %s.", alias, alias.replaceAll(localAddressRegex, "$1")));
+                    emailKeyPassword = properties.getProperty(String.format("mail.keystore.%s.password", alias.replaceAll(localAddressRegex, "$1")));
+                    if (emailKeyPassword == null || emailKeyPassword.trim().isEmpty()) {
+                        // default to keystore password
+                        log.debug(String.format("No key password found for %s.  Defaulting to using the keystore password.", alias));
+                        emailKeyPassword = properties.getProperty("mail.keystore.password");
+                    }
                 }
-                return Optional.of(MailSigner.signMessage(mimeMessage, (PrivateKey)keyStore.getKey(signingAddress.get(), emailKeyPassword.toCharArray()), ((X509Certificate) keyStore.getCertificateChain(signingAddress.get())[0])));
+                return Optional.of(MailSigner.signMessage(mimeMessage, (PrivateKey)keyStore.getKey(alias, emailKeyPassword.toCharArray()), ((X509Certificate) keyStore.getCertificateChain(alias)[0])));
             } else {
                 log.info("Could not find an email certificate for any of the from addresses: " + from);
                 return Optional.empty();
