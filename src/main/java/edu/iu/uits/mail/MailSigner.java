@@ -107,11 +107,12 @@ public class MailSigner {
         String emailKeyPassword = properties.getProperty(String.format(CERT_PASSWORD_PROPERTY_TEMPLATE, alias));
         if (emailKeyPassword == null || emailKeyPassword.trim().isEmpty()) {
             // try local part of address
-            log.debug(String.format("No key password found for %s.  Trying local portion, %s.", alias, alias.replaceAll(LOCAL_ADDRESS_REGEX, "$1")));
-            emailKeyPassword = properties.getProperty(String.format("mail.keystore.%s.password", alias.replaceAll(LOCAL_ADDRESS_REGEX, "$1")));
+            final String localPart = alias.replaceAll(LOCAL_ADDRESS_REGEX, "$1");
+            log.debug(String.format("No key password found for %s.  Trying local portion, %s.", alias, localPart));
+            emailKeyPassword = properties.getProperty(String.format("mail.keystore.%s.password", localPart));
             if (emailKeyPassword == null || emailKeyPassword.trim().isEmpty()) {
                 // default to keystore password
-                log.debug(String.format("No key password found for %s.  Defaulting to using the keystore password.", alias));
+                log.debug(String.format("No key password found for %s or %s.  Defaulting to using the keystore password.", alias, localPart));
                 emailKeyPassword = properties.getProperty("mail.keystore.password");
             }
         }

@@ -53,8 +53,8 @@ public class MailSignerTest {
 
     @Test
     @DisplayName("Test finding password property based on local host and full address property being non-null, but empty")
-    public void testGetEmailPasswordLocalAddressPartWhereFull() {
-        properties.setProperty(String.format(MailSigner.CERT_PASSWORD_PROPERTY_TEMPLATE, TEST_ADDRESS), " ");
+    public void testGetEmailPasswordLocalAddressEmptyFullAddress() {
+        properties.setProperty(String.format(MailSigner.CERT_PASSWORD_PROPERTY_TEMPLATE, TEST_ADDRESS), "");
         properties.setProperty(String.format(MailSigner.CERT_PASSWORD_PROPERTY_TEMPLATE, TEST_ADDRESS_LOCAL_PART), ALIAS_PASSWORD);
         mailSigner = new MailSigner(properties, keyStore);
         String emailPassword = mailSigner.getEmailPassword(TEST_ADDRESS);
