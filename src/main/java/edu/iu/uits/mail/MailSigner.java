@@ -103,7 +103,7 @@ public class MailSigner {
         }
     }
 
-    public String getEmailPassword(String alias) {
+    protected String getEmailPassword(String alias) {
         String emailKeyPassword = properties.getProperty(String.format(CERT_PASSWORD_PROPERTY_TEMPLATE, alias));
         if (emailKeyPassword == null || emailKeyPassword.trim().isEmpty()) {
             // try local part of address
