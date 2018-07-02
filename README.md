@@ -2,6 +2,17 @@
 
 When this library is added to a project you may configure a Java Mail session to use the `smtp+smime` or `smtps+smime` protocol to have the transport sign outgoing mail with a mail certificate stored in a Java keystore (JKS) file.
 
+## Installation
+### From Maven
+Add the following as a dependency in your project
+```xml
+<dependency>
+    <groupId>edu.iu.uits</groupId>
+    <artifactId>javamail-smime-transport</artifactId>
+    <version>1.0.10</version>
+</dependency>
+```
+
 ## Configuration
 The following properties need to be set to configure the Java mail session
 
