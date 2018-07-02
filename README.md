@@ -4,7 +4,7 @@ When this library is added to a project you may configure a Java Mail session to
 
 ## Installation
 ### From Maven
-Add the following as a dependency in your project
+Add the following as a dependency in your pom.xml
 ```xml
 <dependency>
     <groupId>edu.iu.uits</groupId>
