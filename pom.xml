@@ -317,9 +317,6 @@
         </profile>
         <profile>
             <id>integration-tests</id>
-            <properties>
-                <profiles.active>filesystem-logging</profiles.active>
-            </properties>
             <activation>
                 <property>
                     <name>maven.failsafe.skip</name>
