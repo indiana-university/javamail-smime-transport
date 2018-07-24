@@ -37,19 +37,19 @@ public class SignedEmailIT {
 
     @Before
     public void setup() throws IOException {
+        // properties
         final InputStream input = new FileInputStream("/opt/j2ee/security/kr/rice-keystore.properties");
-        Properties riceProperties = new Properties();
-        riceProperties.load(input);
-
-        properties.put("mail.keystore.file",  riceProperties.getProperty("keystore.file"));
-        properties.put("mail.keystore.password", riceProperties.getProperty("keystore.password"));
-        properties.put("mail.keystore.workflow.noreply.password", riceProperties.getProperty("workflow.noreply@iu.edu"));
-
+        Properties keystoreProperties = new Properties();
+        keystoreProperties.load(input);
+        properties.put("mail.keystore.file",  keystoreProperties.getProperty("keystore.file"));
+        properties.put("mail.keystore.password", keystoreProperties.getProperty("keystore.password"));
+        properties.put("mail.keystore.workflow.noreply.password", keystoreProperties.getProperty("workflow.noreply@iu.edu"));
+        // server setup
         final ServerSetup serverSetup = new ServerSetup(SMTP_PORT, null, SMTP_PROTOCOL);
-
+        // server
         greenMail = new GreenMail(serverSetup);
         greenMail.start();
-
+        // session
         session = GreenMailUtil.getSession(serverSetup, properties);
 
     }
@@ -71,9 +71,9 @@ public class SignedEmailIT {
         msg.setSubject("Testing signed text email");
         Transport.send(msg);
 
-        Message message = getMessage();
+        Message sentMessage = getSentMessage();
 
-        assertTrue(hasSignedContentType(message));
+        assertTrue(hasSignedContentType(sentMessage));
     }
 
     @Test
@@ -87,33 +87,36 @@ public class SignedEmailIT {
         msg.setSubject("Testing email address without cert");
         Transport.send(msg);
 
-        Message message = getMessage();
+        Message sentMessage = getSentMessage();
 
-        assertFalse(hasSignedContentType(message));
+        assertFalse(hasSignedContentType(sentMessage));
     }
 
     @Test
     @DisplayName("Test that text/html emails are signed")
-    public void testTextHtmlEmailIsSigned() throws MessagingException {
+    public void testTextHtmlEmailIsSigned() throws MessagingException, IOException {
         MimeMessage msg = new MimeMessage(session);
-        msg.setHeader("Content-Type", "text/html");
-        msg.setText("<p>content</p>");
+        msg.setContent("<p>content</p>", "text/html");
+        msg.saveChanges();
         msg.setFrom(new InternetAddress(EMAIL_ADDRESS_WITH_CERT));
         msg.addRecipient(Message.RecipientType.TO,
                 new InternetAddress("bar@example.com"));
         msg.setSubject("Testing signed text/html email");
         Transport.send(msg);
 
-        Message message = getMessage();
+        Message sentMessage = getSentMessage();
 
-        assertTrue(hasSignedContentType(message));
+        // message is signed
+        assertTrue(hasSignedContentType(sentMessage));
+        // message preserves original content type
+        assertTrue(getInnerContentType(sentMessage).contains("text/html"));
 
     }
 
 
     @Test
     @DisplayName("Test that a multi-part email is properly signed")
-    public void testMultipartEmailIsSigned() throws MessagingException {
+    public void testMultipartEmailIsSigned() throws MessagingException, IOException {
         Message msg = new MimeMessage(session);
         Multipart multiPart = new MimeMultipart("alternative");
 
@@ -133,14 +136,22 @@ public class SignedEmailIT {
         msg.setSubject("Testing signed multipart email");
         Transport.send(msg);
 
-        Message message = getMessage();
-
-        assertTrue(hasSignedContentType(message));
+        Message sentMessage = getSentMessage();
+        // email is signed
+        assertTrue(hasSignedContentType(sentMessage));
+        // email has correct inner type
+        assertTrue(getInnerContentType(sentMessage).contains("multipart/alternative"));
 
     }
 
-    private boolean hasSignedContentType(Message message) throws MessagingException {
-        Enumeration<Header> headers = message.getAllHeaders();
+    private Message getSentMessage() {
+        Message[] messages = greenMail.getReceivedMessages();
+        assertEquals(1, messages.length);
+        return  messages[0];
+    }
+
+    private boolean hasSignedContentType(Message sentMessage) throws MessagingException {
+        Enumeration<Header> headers = sentMessage.getAllHeaders();
         while (headers.hasMoreElements()) {
             Header header = headers.nextElement();
             System.out.println(String.format("%s : %s", header.getName(), header.getValue()));
@@ -151,10 +162,9 @@ public class SignedEmailIT {
         return false;
     }
 
-    private Message getMessage() {
-        Message[] messages = greenMail.getReceivedMessages();
-        assertEquals(1, messages.length);
-        return  messages[0];
+    private String getInnerContentType(Message sentMessage) throws MessagingException, IOException {
+        MimeMultipart content = (MimeMultipart) sentMessage.getContent();
+        return content.getBodyPart(0).getHeader("Content-Type")[0];
     }
 }
 
