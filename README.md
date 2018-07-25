@@ -104,7 +104,7 @@ The integration tests (under `src/it`) require the following configuration:
 
 A properties file whose default location is `/opt/j2ee/security/kr//opt/j2ee/security/kr/rice-keystore.properties`. This location can be overridden with a `KEYSTORE_PROPERTY_FILE_PATH` environment variable. 
 
-The properties file should have `keystore.file` and `keystore.password` entries as well as at least one email address mapped to its certificate password. For example:.
+The properties file should have `keystore.file` and `keystore.password` entries as well as at least one email address mapped to its certificate password. For example:
 
 ```properties
 keystore.file=/path/to/keystore.jks
