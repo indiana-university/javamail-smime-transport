@@ -80,9 +80,9 @@
         <plugins.javadoc.version>3.0.1</plugins.javadoc.version>
         <plugins.license.version>2.0.0</plugins.license.version>
         <plugins.nexus-staging.version>1.6.13</plugins.nexus-staging.version>
-        <plugins.release.version>3.0.0-M6</plugins.release.version>
+        <plugins.release.version>2.5.3</plugins.release.version>
         <plugins.source.version>3.0.1</plugins.source.version>
-        <plugins.surefire.version>3.0.0-M7</plugins.surefire.version>
+        <plugins.surefire.version>2.22.2</plugins.surefire.version>
 
         <!-- Project Metadata -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
